@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   FileText, Plus, Search, Grid3X3, List, Eye, Edit, Trash, 
-  MoreVertical, Calendar, Users, Brain 
+  MoreVertical, Calendar, Users, Brain, Camera, Monitor,
+  CreditCard, UserCheck, Upload
 } from 'lucide-react';
 import Card, { CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -25,8 +26,21 @@ const InterviewsPage: React.FC = () => {
     name: '',
     departmentId: '',
     jobDescription: '',
+    imageUrl: '',
     type: InterviewType.LLM_BASED,
+    numberOfQuestions: 10,
+    questionComposition: {
+      skills: 40,
+      background: 20,
+      education: 15,
+      general: 15,
+      language: 10,
+    },
     verifyId: false,
+    recordVideo: false,
+    screenShare: false,
+    ssnVerification: false,
+    hiringManager: '',
     questions: [{ content: '', format: 'text' as const }],
   });
 
@@ -36,17 +50,13 @@ const InterviewsPage: React.FC = () => {
                 interview.jobDescription.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddQuestion = () => {
-    setFormData({
-      ...formData,
-      questions: [...(formData.questions || []), { content: '', format: 'text' as const }],
-    });
-  };
-
-  const handleQuestionChange = (index: number, value: string) => {
-    const updatedQuestions = [...(formData.questions || [])];
-    updatedQuestions[index] = { ...updatedQuestions[index], content: value };
-    setFormData({ ...formData, questions: updatedQuestions });
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // In a real app, this would upload to a storage service
+      const imageUrl = URL.createObjectURL(file);
+      setFormData({ ...formData, imageUrl });
+    }
   };
 
   const handleCreateInterview = () => {
@@ -55,25 +65,47 @@ const InterviewsPage: React.FC = () => {
       name: formData.name,
       departmentId: formData.departmentId,
       jobDescription: formData.jobDescription,
+      imageUrl: formData.imageUrl || 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg',
       type: formData.type,
       questions: formData.type === InterviewType.MANUAL ? formData.questions : undefined,
       verifyId: formData.verifyId,
+      recordVideo: formData.recordVideo,
+      screenShare: formData.screenShare,
+      ssnVerification: formData.ssnVerification,
+      hiringManager: formData.hiringManager,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      createdBy: 'u1', // Current user's ID would normally go here
+      createdBy: 'u1',
     };
     
     setInterviews([...interviews, newInterview]);
+    resetFormData();
+    setIsCreateModalOpen(false);
+  };
+
+  const resetFormData = () => {
     setFormData({
       name: '',
       departmentId: '',
       jobDescription: '',
+      imageUrl: '',
       type: InterviewType.LLM_BASED,
+      numberOfQuestions: 10,
+      questionComposition: {
+        skills: 40,
+        background: 20,
+        education: 15,
+        general: 15,
+        language: 10,
+      },
       verifyId: false,
+      recordVideo: false,
+      screenShare: false,
+      ssnVerification: false,
+      hiringManager: '',
       questions: [{ content: '', format: 'text' as const }],
     });
     setCurrentCreateStep(1);
-    setIsCreateModalOpen(false);
   };
 
   const handleDeleteInterview = () => {
@@ -328,17 +360,10 @@ const InterviewsPage: React.FC = () => {
         isOpen={isCreateModalOpen}
         onClose={() => {
           setIsCreateModalOpen(false);
-          setCurrentCreateStep(1);
-          setFormData({
-            name: '',
-            departmentId: '',
-            jobDescription: '',
-            type: InterviewType.LLM_BASED,
-            verifyId: false,
-            questions: [{ content: '', format: 'text' as const }],
-          });
+          resetFormData();
         }}
-        title={`Create Interview - Step ${currentCreateStep} of ${formData.type === InterviewType.LLM_BASED ? 2 : 3}`}
+        title={`Create Interview - Step ${currentCreateStep} of 3`}
+        maxWidth="xl"
       >
         {currentCreateStep === 1 && (
           <div className="space-y-4">
@@ -350,11 +375,43 @@ const InterviewsPage: React.FC = () => {
               required
             />
             
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Interview Image
+              </label>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div className="space-y-1 text-center">
+                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="flex text-sm text-gray-600">
+                    <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500">
+                      <span>Upload a file</span>
+                      <input
+                        type="file"
+                        className="sr-only"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                      />
+                    </label>
+                    <p className="pl-1">or drag and drop</p>
+                  </div>
+                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                </div>
+              </div>
+            </div>
+            
             <Select
               label="Department"
               options={mockDepartments.map(dept => ({ value: dept.id, label: dept.name }))}
               value={formData.departmentId}
               onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
+              required
+            />
+            
+            <Input
+              label="Hiring Manager"
+              placeholder="Enter hiring manager's name"
+              value={formData.hiringManager}
+              onChange={(e) => setFormData({ ...formData, hiringManager: e.target.value })}
               required
             />
             
@@ -375,7 +432,7 @@ const InterviewsPage: React.FC = () => {
               <Button
                 variant="primary"
                 onClick={() => setCurrentCreateStep(2)}
-                disabled={!formData.name || !formData.departmentId || !formData.jobDescription}
+                disabled={!formData.name || !formData.departmentId || !formData.jobDescription || !formData.hiringManager}
               >
                 Next Step
               </Button>
@@ -404,9 +461,9 @@ const InterviewsPage: React.FC = () => {
                       <Brain size={24} className="text-primary-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900">LLM-Based Interview</h4>
+                      <h4 className="font-medium text-gray-900">LLM-Based Interview with AI Response Analysis</h4>
                       <p className="text-sm text-gray-500">
-                        AI automatically generates questions based on the job description and evaluates responses.
+                        AI automatically generates questions and evaluates responses using advanced language models.
                       </p>
                     </div>
                   </div>
@@ -427,9 +484,9 @@ const InterviewsPage: React.FC = () => {
                       <FileText size={24} className="text-secondary-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900">Manual Questions</h4>
+                      <h4 className="font-medium text-gray-900">Manual Questions with LLM Response Analysis</h4>
                       <p className="text-sm text-gray-500">
-                        Create your own set of predefined questions for the interview.
+                        Create your own questions while still leveraging AI for response analysis.
                       </p>
                     </div>
                   </div>
@@ -437,15 +494,127 @@ const InterviewsPage: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <h3 className="font-medium text-gray-900">Verify Candidate Identity</h3>
-                <p className="text-sm text-gray-500">Require ID verification before the interview</p>
-              </div>
-              <Toggle 
-                isEnabled={formData.verifyId}
-                onChange={() => setFormData({ ...formData, verifyId: !formData.verifyId })}
+            <div className="space-y-4">
+              <Input
+                type="number"
+                label="Number of Questions"
+                min={5}
+                max={30}
+                value={formData.numberOfQuestions}
+                onChange={(e) => setFormData({ ...formData, numberOfQuestions: parseInt(e.target.value) })}
               />
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Question Composition
+                </label>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>Technical Skills & Experience</span>
+                      <span>{formData.questionComposition.skills}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={formData.questionComposition.skills}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        questionComposition: {
+                          ...formData.questionComposition,
+                          skills: parseInt(e.target.value)
+                        }
+                      })}
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>Background & Experience Verification</span>
+                      <span>{formData.questionComposition.background}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={formData.questionComposition.background}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        questionComposition: {
+                          ...formData.questionComposition,
+                          background: parseInt(e.target.value)
+                        }
+                      })}
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>Educational Verification</span>
+                      <span>{formData.questionComposition.education}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={formData.questionComposition.education}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        questionComposition: {
+                          ...formData.questionComposition,
+                          education: parseInt(e.target.value)
+                        }
+                      })}
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>General Knowledge</span>
+                      <span>{formData.questionComposition.general}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={formData.questionComposition.general}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        questionComposition: {
+                          ...formData.questionComposition,
+                          general: parseInt(e.target.value)
+                        }
+                      })}
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>Language Proficiency</span>
+                      <span>{formData.questionComposition.language}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={formData.questionComposition.language}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        questionComposition: {
+                          ...formData.questionComposition,
+                          language: parseInt(e.target.value)
+                        }
+                      })}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div className="pt-4 flex justify-between">
@@ -456,93 +625,78 @@ const InterviewsPage: React.FC = () => {
                 Previous Step
               </Button>
               
-              {formData.type === InterviewType.LLM_BASED ? (
-                <Button
-                  variant="primary"
-                  onClick={handleCreateInterview}
-                >
-                  Create Interview
-                </Button>
-              ) : (
-                <Button
-                  variant="primary"
-                  onClick={() => setCurrentCreateStep(3)}
-                >
-                  Next Step
-                </Button>
-              )}
+              <Button
+                variant="primary"
+                onClick={() => setCurrentCreateStep(3)}
+              >
+                Next Step
+              </Button>
             </div>
           </div>
         )}
         
-        {currentCreateStep === 3 && formData.type === InterviewType.MANUAL && (
-          <div className="space-y-4">
-            <h3 className="font-medium text-gray-900 mb-3">Interview Questions</h3>
-            
+        {currentCreateStep === 3 && (
+          <div className="space-y-6">
             <div className="space-y-4">
-              {formData.questions?.map((question, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                  <div className="mb-2">
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Question {index + 1}
-                      </label>
-                      {index > 0 && (
-                        <button
-                          type="button"
-                          className="text-red-600 text-sm hover:text-red-800"
-                          onClick={() => {
-                            const updatedQuestions = [...(formData.questions || [])];
-                            updatedQuestions.splice(index, 1);
-                            setFormData({ ...formData, questions: updatedQuestions });
-                          }}
-                        >
-                          Remove
-                        </button>
-                      )}
+              <h3 className="font-medium text-gray-900">Verification Requirements</h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center">
+                    <Camera className="h-5 w-5 text-gray-400 mr-3" />
+                    <div>
+                      <h4 className="font-medium text-gray-900">Record Video</h4>
+                      <p className="text-sm text-gray-500">Record candidate's video during the interview</p>
                     </div>
-                    <textarea
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                      rows={2}
-                      placeholder="Enter your question here"
-                      value={question.content}
-                      onChange={(e) => handleQuestionChange(index, e.target.value)}
-                    />
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Response Type
-                    </label>
-                    <select
-                      className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 w-full"
-                      value={question.format}
-                      onChange={(e) => {
-                        const updatedQuestions = [...(formData.questions || [])];
-                        updatedQuestions[index] = { 
-                          ...updatedQuestions[index], 
-                          format: e.target.value as 'text' | 'multiple_choice' | 'yes_no' 
-                        };
-                        setFormData({ ...formData, questions: updatedQuestions });
-                      }}
-                    >
-                      <option value="text">Text Response</option>
-                      <option value="multiple_choice">Multiple Choice</option>
-                      <option value="yes_no">Yes/No</option>
-                    </select>
-                  </div>
+                  <Toggle
+                    isEnabled={formData.recordVideo}
+                    onChange={() => setFormData({ ...formData, recordVideo: !formData.recordVideo })}
+                  />
                 </div>
-              ))}
-            </div>
-            
-            <div>
-              <Button
-                variant="outline"
-                onClick={handleAddQuestion}
-                className="w-full"
-              >
-                + Add Another Question
-              </Button>
+                
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center">
+                    <Monitor className="h-5 w-5 text-gray-400 mr-3" />
+                    <div>
+                      <h4 className="font-medium text-gray-900">Screen Sharing</h4>
+                      <p className="text-sm text-gray-500">Require candidate to share their screen</p>
+                    </div>
+                  </div>
+                  <Toggle
+                    isEnabled={formData.screenShare}
+                    onChange={() => setFormData({ ...formData, screenShare: !formData.screenShare })}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center">
+                    <CreditCard className="h-5 w-5 text-gray-400 mr-3" />
+                    <div>
+                      <h4 className="font-medium text-gray-900">SSN Verification</h4>
+                      <p className="text-sm text-gray-500">Request SSN for identity verification</p>
+                    </div>
+                  </div>
+                  <Toggle
+                    isEnabled={formData.ssnVerification}
+                    onChange={() => setFormData({ ...formData, ssnVerification: !formData.ssnVerification })}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center">
+                    <UserCheck className="h-5 w-5 text-gray-400 mr-3" />
+                    <div>
+                      <h4 className="font-medium text-gray-900">ID Verification</h4>
+                      <p className="text-sm text-gray-500">Verify candidate's identity before interview</p>
+                    </div>
+                  </div>
+                  <Toggle
+                    isEnabled={formData.verifyId}
+                    onChange={() => setFormData({ ...formData, verifyId: !formData.verifyId })}
+                  />
+                </div>
+              </div>
             </div>
             
             <div className="pt-4 flex justify-between">
@@ -556,11 +710,6 @@ const InterviewsPage: React.FC = () => {
               <Button
                 variant="primary"
                 onClick={handleCreateInterview}
-                disabled={
-                  !formData.questions ||
-                  formData.questions.length === 0 ||
-                  formData.questions.some(q => !q.content)
-                }
               >
                 Create Interview
               </Button>
