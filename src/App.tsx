@@ -19,8 +19,11 @@ const ProtectedRoute: React.FC<{
   allowedRoles?: UserRole[];
 }> = ({ children, allowedRoles }) => {
   const { currentUser, isLoading } = useAuth();
+
+  console.log('ProtectedRoute - isLoading:', isLoading, 'currentUser:', currentUser);
   
   if (isLoading) {
+    console.log('ProtectedRoute - Loading...');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin h-8 w-8 border-4 border-primary-500 rounded-full border-t-transparent"></div>
@@ -29,24 +32,32 @@ const ProtectedRoute: React.FC<{
   }
   
   if (!currentUser) {
+    console.log('ProtectedRoute - No user, redirecting to login');
     return <Navigate to="/login" replace />;
   }
   
   if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
+    console.log('ProtectedRoute - User role not allowed:', currentUser.role, 'Allowed roles:', allowedRoles);
     // Redirect to an appropriate page based on user role
     if (currentUser.role === UserRole.CANDIDATE) {
+       console.log('ProtectedRoute - Redirecting CANDIDATE to /interview');
       return <Navigate to="/interview" replace />;
     }
+    console.log('ProtectedRoute - Redirecting other roles to /');
     return <Navigate to="/" replace />;
   }
   
+  console.log('ProtectedRoute - Access granted');
   return <>{children}</>;
 };
 
 const CandidateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser, isLoading } = useAuth();
+
+   console.log('CandidateRoute - isLoading:', isLoading, 'currentUser:', currentUser);
   
   if (isLoading) {
+    console.log('CandidateRoute - Loading...');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin h-8 w-8 border-4 border-primary-500 rounded-full border-t-transparent"></div>
@@ -55,13 +66,16 @@ const CandidateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
   
   if (!currentUser) {
+    console.log('CandidateRoute - No user, redirecting to login');
     return <Navigate to="/login" replace />;
   }
   
   if (currentUser.role !== UserRole.CANDIDATE) {
+    console.log('CandidateRoute - User is not CANDIDATE, redirecting to /');
     return <Navigate to="/" replace />;
   }
-  
+
+   console.log('CandidateRoute - Access granted');
   return <>{children}</>;
 };
 
@@ -74,9 +88,7 @@ function App() {
           
           {/* Candidate Routes */}
           <Route path="/interview/:id" element={
-            <CandidateRoute>
-              <CandidateInterviewPage />
-            </CandidateRoute>
+            <CandidateInterviewPage />
           } />
           
           {/* Admin Routes */}

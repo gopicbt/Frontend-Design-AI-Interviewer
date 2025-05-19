@@ -29,6 +29,7 @@ export const mockUsers: User[] = [
     id: 'u1',
     name: 'Alex Johnson',
     email: 'admin@example.com',
+    password: 'Password@123',
     role: UserRole.SUPER_ADMIN,
     avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
     permissions: mockPermissions,
@@ -37,6 +38,7 @@ export const mockUsers: User[] = [
     id: 'u2',
     name: 'Sarah Williams',
     email: 'hradmin@example.com',
+    password: 'Password@123',
     role: UserRole.ADMIN,
     avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
     department: 'd1',
@@ -46,6 +48,7 @@ export const mockUsers: User[] = [
     id: 'u3',
     name: 'Michael Davis',
     email: 'manager@example.com',
+    password: 'Password@123',
     role: UserRole.HIRING_MANAGER,
     avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
     department: 'd2',
@@ -55,6 +58,7 @@ export const mockUsers: User[] = [
     id: 'u4',
     name: 'Emily Chen',
     email: 'candidate@example.com',
+    password: 'Password@123',
     role: UserRole.CANDIDATE,
     avatar: 'https://randomuser.me/api/portraits/women/4.jpg',
     permissions: [],
@@ -200,6 +204,7 @@ export const mockCandidates: Candidate[] = [
     ],
     behaviourReport: 'Candidate displayed confidence and strong communication skills throughout the interview.',
     completedAt: '2023-05-15T11:30:00Z',
+    interviewedDate: '2023-05-15',
   },
   {
     id: 'c2',
@@ -227,6 +232,7 @@ export const mockCandidates: Candidate[] = [
     ],
     behaviourReport: 'Candidate was enthusiastic and provided concrete examples from past work.',
     completedAt: '2023-05-18T14:45:00Z',
+    interviewedDate: '2023-05-18',
   },
   {
     id: 'c3',
@@ -246,8 +252,9 @@ export const mockCandidates: Candidate[] = [
         feedback: 'Basic understanding of required technologies but lacks depth.',
       },
     ],
-    behaviourReport: 'Candidate appeared nervous and had difficulty providing specific examples.',
-    completedAt: '2023-05-20T09:15:00Z',
+    behaviourReport: 'Candidate struggled to answer technical questions and seemed nervous.',
+    completedAt: '2023-05-20T09:00:00Z',
+    interviewedDate: '2023-05-20',
   },
   {
     id: 'c4',
@@ -262,24 +269,41 @@ export const mockCandidates: Candidate[] = [
     responses: [
       {
         questionId: 'q1',
-        answer: 'I have extensive experience with Python, TensorFlow, and scikit-learn for machine learning models.',
+        answer: 'I have extensive experience in machine learning model development and deployment using Python and TensorFlow.',
         score: 95,
-        feedback: 'Excellent technical knowledge and practical experience.',
+        feedback: 'Exceptional technical skills and relevant experience.',
+      },
+      {
+        questionId: 'q2',
+        answer: 'I worked on a project to predict customer churn, which involved handling large datasets and implementing various machine learning algorithms.',
+        score: 90,
+        feedback: 'Provided a detailed and insightful explanation of a complex project.',
       },
     ],
-    behaviourReport: 'Candidate demonstrated strong analytical thinking and excellent communication skills.',
-    completedAt: '2023-05-25T13:00:00Z',
+    behaviourReport: 'Candidate was articulate and demonstrated strong problem-solving skills.',
+    completedAt: '2023-06-01T10:00:00Z',
+    interviewedDate: '2023-06-01',
   },
 ];
 
 // Mock Time Metrics for Analytics
 export const mockTimeMetrics: TimeMetric[] = [
-  { period: 'Jan 2023', hoursSaved: 45 },
-  { period: 'Feb 2023', hoursSaved: 52 },
-  { period: 'Mar 2023', hoursSaved: 68 },
-  { period: 'Apr 2023', hoursSaved: 75 },
-  { period: 'May 2023', hoursSaved: 95 },
-  { period: 'Jun 2023', hoursSaved: 110 },
+  {
+    period: 'Week 1',
+    hoursSaved: 50
+  },
+  {
+    period: 'Week 2',
+    hoursSaved: 60
+  },
+  {
+    period: 'Week 3',
+    hoursSaved: 55
+  },
+  {
+    period: 'Week 4',
+    hoursSaved: 70
+  },
 ];
 
 // Mock Candidate Performance for Analytics
@@ -298,7 +322,7 @@ export const mockCandidatePerformance: CandidatePerformance[] = [
   {
     interviewId: 'i2',
     interviewName: 'Marketing Specialist',
-    averageScore: 78,
+    averageScore: 76.5,
     candidateCount: 1,
     topPerformer: {
       candidateId: 'c2',
@@ -326,13 +350,14 @@ export const mockIntegrations: Integration[] = [
     name: 'OpenAI GPT-4',
     type: 'llm',
     isConnected: true,
-    lastSynced: '2023-06-01T12:00:00Z',
+    lastSynced: '2023-10-26T10:00:00Z'
   },
   {
     id: 'int2',
-    name: 'Lever ATS',
+    name: 'Google Talent',
     type: 'ats',
     isConnected: false,
+    lastSynced: undefined
   },
   {
     id: 'int3',

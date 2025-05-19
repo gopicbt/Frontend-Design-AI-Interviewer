@@ -10,6 +10,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password: string;
   role: UserRole;
   avatar?: string;
   department?: string;
@@ -50,6 +51,17 @@ export interface Interview {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
+  recordVideo?: boolean;
+  screenShare?: boolean;
+  ssnVerification?: boolean;
+  hiringManager?: string;
+  questionComposition?: {
+    skills: number;
+    background: number;
+    education: number;
+    general: number;
+    language: number;
+  };
 }
 
 export interface Question {
@@ -74,6 +86,7 @@ export interface Candidate {
   responses: Response[];
   behaviourReport?: string;
   completedAt: string;
+  interviewedDate?: string;
 }
 
 export interface Response {

@@ -38,7 +38,6 @@ const LoginPage: React.FC = () => {
     { role: 'HR Super Admin', email: 'admin@example.com', password: 'password' },
     { role: 'HR Admin', email: 'hradmin@example.com', password: 'password' },
     { role: 'Hiring Manager', email: 'manager@example.com', password: 'password' },
-    { role: 'Candidate', email: 'candidate@example.com', password: 'password' },
   ];
 
   const handlePrefilledLogin = (email: string, password: string) => {
